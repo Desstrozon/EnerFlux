@@ -1,18 +1,18 @@
-import { ShoppingBag, User } from "lucide-react";
+import { ShoppingBag, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 type UserMini = { name?: string; rol?: string };
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [authUser, setAuthUser] = useState<UserMini | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
     setAuthUser(raw ? JSON.parse(raw) : null);
-    // escucha cambios de sesión desde otras pestañas
     const onStorage = () => {
       const r = localStorage.getItem("user");
       setAuthUser(r ? JSON.parse(r) : null);
@@ -20,6 +20,11 @@ const Navbar = () => {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  const isAdmin = useMemo(() => {
+    const r = String(authUser?.rol ?? "").toLowerCase();
+    return r === "admin" || r === "administrador";
+  }, [authUser]);
 
   const logout = async () => {
     const token = localStorage.getItem("token");
@@ -35,21 +40,60 @@ const Navbar = () => {
     navigate("/");
   };
 
+  // activo también para subrutas de /admin
+  const active = (path: string) =>
+    location.pathname === path || (path === "/admin" && location.pathname.startsWith("/admin"))
+      ? "text-primary font-medium"
+      : "text-foreground";
+
+  // Lógica de los botones de volver
+  const isAdminRoot = location.pathname === "/admin";
+  const isAdminSub =
+    location.pathname.startsWith("/admin/usuarios") ||
+    location.pathname.startsWith("/admin/vendedores");
+  const isInAdmin = isAdminRoot || isAdminSub;
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-foreground">Enerflux</span>
-        </div>
 
+        {/* Izquierda: logo o botón volver según dónde estés */}
+        {isInAdmin ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(isAdminRoot ? "/" : "/admin")}
+            className="flex items-center gap-2"
+            title={isAdminRoot ? "Volver al inicio" : "Volver al panel"}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {isAdminRoot ? "Inicio" : "Panel"}
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <ShoppingBag className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold text-foreground">Enerflux</span>
+          </div>
+        )}
+
+        {/* Centro: links públicos + Panel (Admin) */}
         <div className="hidden md:flex items-center gap-8">
           <a href="#inicio" className="text-foreground hover:text-primary transition-colors">Inicio</a>
           <a href="#productos" className="text-foreground hover:text-primary transition-colors">Productos</a>
           <a href="#proveedores" className="text-foreground hover:text-primary transition-colors">Proveedores</a>
           <a href="#contacto" className="text-foreground hover:text-primary transition-colors">Contacto</a>
+
+          {isAdmin && (
+            <>
+              <span className="opacity-30">|</span>
+              <NavLink to="/admin" className={`transition-colors ${active("/admin")}`}>
+                Panel (Admin)
+              </NavLink>
+            </>
+          )}
         </div>
 
+        {/* Derecha: sesión */}
         <div className="flex items-center gap-3">
           {authUser ? (
             <>
