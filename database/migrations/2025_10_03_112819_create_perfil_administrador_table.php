@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
   public function up(): void {
     Schema::create('perfil_administrador', function (Blueprint $table) {
-        $table->unsignedBigInteger('id_usuario')->primary(); // PK = FK 1:1
-        $table->string('telefono', 20)->nullable();
-        $table->string('departamento', 100)->nullable();
-        $table->timestamps();
+        $table->unsignedBigInteger('id_usuario')->primary();
+    $table->string('telefono', 30)->nullable();
+    $table->string('departamento', 120)->nullable();
+    $table->timestamps();
 
-        $table->foreign('id_usuario')
-              ->references('id')->on('users')
-              ->cascadeOnDelete()->cascadeOnUpdate();
+    $table->foreign('id_usuario')->references('id')->on('users')->cascadeOnDelete();
     });
   }
   public function down(): void {

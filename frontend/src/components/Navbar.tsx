@@ -10,15 +10,27 @@ const Navbar = () => {
   const location = useLocation();
   const [authUser, setAuthUser] = useState<UserMini | null>(null);
 
-  useEffect(() => {
+  const refreshAuth = () => {
     const raw = localStorage.getItem("user");
     setAuthUser(raw ? JSON.parse(raw) : null);
-    const onStorage = () => {
-      const r = localStorage.getItem("user");
-      setAuthUser(r ? JSON.parse(r) : null);
-    };
+  };
+
+  useEffect(() => {
+    // Carga inicial
+    refreshAuth();
+
+    // Se dispara entre pestañas
+    const onStorage = () => refreshAuth();
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+
+    // Se dispara en la MISMA pestaña (ver snippet de Login/Register abajo)
+    const onAuthChanged = () => refreshAuth();
+    window.addEventListener("auth:changed", onAuthChanged as EventListener);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("auth:changed", onAuthChanged as EventListener);
+    };
   }, []);
 
   const isAdmin = useMemo(() => {
@@ -37,12 +49,15 @@ const Navbar = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setAuthUser(null);
+    // notificar en esta pestaña (por si hay otros componentes dependientes)
+    window.dispatchEvent(new Event("auth:changed"));
     navigate("/");
   };
 
   // activo también para subrutas de /admin
   const active = (path: string) =>
-    location.pathname === path || (path === "/admin" && location.pathname.startsWith("/admin"))
+    location.pathname === path ||
+    (path === "/admin" && location.pathname.startsWith("/admin"))
       ? "text-primary font-medium"
       : "text-foreground";
 
@@ -56,7 +71,6 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-
         {/* Izquierda: logo o botón volver según dónde estés */}
         {isInAdmin ? (
           <Button
@@ -106,14 +120,17 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="icon" className="hover:bg-secondary">
-                <ShoppingBag className="h-5 w-5" />
-              </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
                 <User className="h-4 w-4 mr-2" />
                 Ingresar
               </Button>
-              <Button variant="cta" size="sm" className="hidden sm:inline-flex">
+              {/* IMPORTANTE: este botón lleva a /register */}
+              <Button
+                variant="default" // usa "default"; "cta" no existe por defecto en shadcn
+                size="sm"
+                className="hidden sm:inline-flex"
+                onClick={() => navigate("/register")}
+              >
                 Registrarse
               </Button>
             </>

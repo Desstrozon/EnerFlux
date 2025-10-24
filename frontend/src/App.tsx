@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 
 // Rutas protegidas
 import AdminRoute from "@/routes/AdminRoute";
@@ -16,6 +17,8 @@ import AdminRoute from "@/routes/AdminRoute";
 import AdminIndex from "@/pages/admin/Index";
 import UsersAdmin from "@/pages/admin/Users";      //  coincide con tu archivo
 import VendedoresAdmin from "@/pages/admin/Vendedores"; //  asegúrate de tener este archivo
+import ProductosAdmin from "@/pages/admin/Productos";
+
 
 // Cliente de React Query
 const queryClient = new QueryClient();
@@ -30,6 +33,7 @@ const App = () => (
           {/* Públicas */}
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
 
           {/* Panel administrador */}
@@ -54,6 +58,14 @@ const App = () => (
             element={
               <AdminRoute>
                 <VendedoresAdmin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/productos"
+            element={
+              <AdminRoute>
+                <ProductosAdmin />
               </AdminRoute>
             }
           />

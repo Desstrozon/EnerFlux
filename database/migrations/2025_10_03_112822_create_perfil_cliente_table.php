@@ -5,19 +5,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-  public function up(): void {
+  public function up(): void
+  {
     Schema::create('perfil_cliente', function (Blueprint $table) {
+      Schema::create('perfil_cliente', function (Blueprint $table) {
         $table->unsignedBigInteger('id_usuario')->primary();
-        $table->string('telefono', 20)->nullable();
-        $table->string('direccion', 255)->nullable();
+        $table->string('telefono', 30);
+        $table->string('direccion', 190);
         $table->timestamps();
 
-        $table->foreign('id_usuario')->references('id')->on('users')
-              ->cascadeOnDelete()->cascadeOnUpdate();
+        $table->foreign('id_usuario')->references('id')->on('users')->cascadeOnDelete();
+      });
     });
   }
-  public function down(): void {
+  public function down(): void
+  {
     Schema::dropIfExists('perfil_cliente');
   }
 };
-
