@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 // Controllers
 use App\Http\Controllers\Api\AuthController;
@@ -9,20 +10,19 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\StripeController;
+use App\Http\Controllers\Api\UserController; // 👈 añadido
 
 /*
 |--------------------------------------------------------------------------
 | API ROUTES
 |--------------------------------------------------------------------------
-| Aquí definimos todas las rutas de la API. Mantengo exactamente
-| los mismos endpoints que ya estás usando, solo ordenados y comentados.
+| Aquí definimos todas las rutas de la API.
 */
 
 /* =========================================================
 |  AUTENTICACIÓN (público)
 |  - Login / Logout / Registro
 ========================================================= */
-
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/logout',   [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/register', [RegisterController::class, 'store']);
@@ -31,8 +31,8 @@ Route::post('/register', [RegisterController::class, 'store']);
 |  PRODUCTOS (público)
 |  - Listado y detalle visibles sin autenticación
 ========================================================= */
-Route::get('/productos',       [ProductoController::class, 'index']); // listar (público)
-Route::get('/productos/{id}',  [ProductoController::class, 'show']);  // detalle (público)
+Route::get('/productos',      [ProductoController::class, 'index']); // listar (público)
+Route::get('/productos/{id}', [ProductoController::class, 'show'])->whereNumber('id'); // detalle (público)
 
 /* =========================================================
 |  ZONA AUTENTICADA (cliente logueado)
@@ -43,9 +43,22 @@ Route::get('/productos/{id}',  [ProductoController::class, 'show']);  // detalle
 ========================================================= */
 Route::middleware('auth:sanctum')->group(function () {
     // ---- Perfil propio ----
-    Route::get('/me', fn(\Illuminate\Http\Request $r) => $r->user());
-    Route::put('/me', [\App\Http\Controllers\Api\UserController::class, 'updateSelf']);
-    Route::put('/me/password', [\App\Http\Controllers\Api\UserController::class, 'changePassword']);
+    Route::get('/me', function (Request $r) {
+        return $r->user()->load(['perfilCliente', 'perfilVendedor']);
+    });
+
+    // Aliases de compatibilidad
+    Route::get('/users/me', function (Request $r) {
+        return $r->user()->load(['perfilCliente', 'perfilVendedor']);
+    });
+
+    Route::put('/users/me',            [UserController::class, 'updateSelf']);
+    Route::put('/users/me/profile',    [UserController::class, 'updateSelf']);
+    Route::put('/users/me/password',   [UserController::class, 'changePassword']);
+
+    // Endpoints /me directos
+    Route::put('/me',                  [UserController::class, 'updateSelf']);
+    Route::put('/me/password',         [UserController::class, 'changePassword']);
 
     // ---- Carrito ----
     Route::get('/cart',          [CartController::class, 'show']);
@@ -54,15 +67,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/remove',  [CartController::class, 'remove']);
     Route::post('/cart/clear',   [CartController::class, 'clear']);
     Route::post('/cart/sync',    [CartController::class, 'sync']);
+    // ----- notificaciones -----
+     Route::get('/notifications', function (\Illuminate\Http\Request $r) {
+        return $r->user()->notifications()->latest()->limit(50)->get();
+    });
+
+    Route::post('/notifications/{id}/read', function (\Illuminate\Http\Request $r, string $id) {
+        $n = $r->user()->notifications()->where('id', $id)->firstOrFail();
+        $n->markAsRead();
+        return ['ok' => true];
+    });
 
     // ---- Checkout (Stripe) ----
     Route::post('/checkout/sessions', [StripeController::class, 'createCheckoutSession']);
 
     // ---- Pedidos del cliente ----
     Route::get('/orders/by-session/{session}', [OrderController::class, 'showBySession']); // usado en pantalla de éxito
-    Route::get('/orders/mine', [OrderController::class, 'index']);
-    Route::get('/orders/{order}/invoice',     [OrderController::class, 'invoiceHtml']);
-    Route::get('/orders/{order}/invoice.pdf', [OrderController::class, 'invoicePdf']);
+    Route::get('/orders/mine',                  [OrderController::class, 'index']);
+    Route::get('/orders/{order}/invoice',       [OrderController::class, 'invoiceHtml']);
+    Route::get('/orders/{order}/invoice.pdf',   [OrderController::class, 'invoicePdf']);
 });
 
 /* =========================================================
@@ -71,16 +94,13 @@ Route::middleware('auth:sanctum')->group(function () {
 |  - CRUD de productos (crear/editar/eliminar)
 |  * OJO: no re-declaramos GET /productos para no pisar las públicas
 ========================================================= */
-Route::middleware([
-    'auth:sanctum',
-    \App\Http\Middleware\EnsureRole::class, // debe validar admin
-])->group(function () {
+Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureRole::class])->group(function () {
     // Usuarios
-    Route::get('/users',         [\App\Http\Controllers\Api\UserController::class, 'index']);
-    Route::post('/users',        [\App\Http\Controllers\Api\UserController::class, 'store']);   // crear
-    Route::get('/vendedores',    [\App\Http\Controllers\Api\UserController::class, 'vendedores']);
-    Route::put('/users/{id}',    [\App\Http\Controllers\Api\UserController::class, 'update']);
-    Route::delete('/users/{id}', [\App\Http\Controllers\Api\UserController::class, 'destroy']);
+    Route::get('/users',         [UserController::class, 'index']);
+    Route::post('/users',        [UserController::class, 'store']);   // crear
+    Route::get('/vendedores',    [UserController::class, 'vendedores']);
+    Route::put('/users/{id}',    [UserController::class, 'update'])->whereNumber('id');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->whereNumber('id');
 
     // Productos (solo admin)
     Route::post('/productos',              [ProductoController::class, 'store']);

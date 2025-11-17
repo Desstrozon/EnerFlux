@@ -1,105 +1,136 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiDelete } from "@/lib/api";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
+import {
+  Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { confirm, alertSuccess, alertError } from "@/lib/alerts";
 import BackButton from "@/components/BackButton";
 
-type PerfilCliente = { telefono?: string | null; direccion?: string | null };
-type PerfilVendedor = { telefono?: string | null; zona?: string | null };
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  rol: string;
-  perfil_cliente?: PerfilCliente;
-  perfil_vendedor?: PerfilVendedor;
-};
+type UserRow = { id: number; name: string; email: string; rol: string };
 
 export default function UsersAdmin() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [data, setData] = useState<UserRow[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const navigate = useNavigate();
+
+  async function load() {
+    setLoading(true);
+    try {
+      const users = await apiGet<UserRow[]>("/users");
+      setData(users ?? []);
+    } catch (e: any) {
+      if (e.status === 401) {
+        toast.error("Sesión expirada. Inicia sesión de nuevo.");
+        navigate("/login", { replace: true });
+      } else if (e.status === 403) {
+        toast.error("Acceso restringido: solo administradores.");
+        navigate("/", { replace: true });
+      } else {
+        toast.error(e.message ?? "Error al cargar usuarios.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
+    let mounted = true;
+    (async () => { if (mounted) await load(); })();
+    return () => { mounted = false; };
+  }, []);
 
-    async function load() {
-      setLoading(true);
-      try {
-        const qs = q ? `?q=${encodeURIComponent(q)}` : "";
-        const data = await apiGet<User[]>(`/users${qs}`);
-        if (!cancelled) setUsers(Array.isArray(data) ? data : (data as any).data ?? []);
-      } catch (e) {
-        if (!cancelled) setUsers([]);
-        console.error(e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  const handleEdit = (u: UserRow) => {
+    navigate(`/admin/usuarios/${u.id}`, { state: { user: u } });
+  };
+
+  const handleDelete = async (u: UserRow) => {
+    const ok = await confirm(
+      "Eliminar usuario",
+      `¿Seguro que quieres eliminar a “${u.name}”? Esta acción no se puede deshacer.`,
+      "Eliminar"
+    );
+    if (!ok) return;
+
+    try {
+      setDeletingId(u.id);
+      await apiDelete(`/users/${u.id}`);
+      await alertSuccess("Usuario eliminado.");
+      // refrescar lista
+      await load();
+    } catch (e) {
+      console.error(e);
+      await alertError("No se pudo eliminar el usuario.");
+    } finally {
+      setDeletingId(null);
     }
+  };
 
-    const t = setTimeout(load, 250);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [q]);
+  if (loading) {
+    return <div className="p-4 text-sm text-muted-foreground">Cargando usuarios…</div>;
+  }
 
   return (
-    <main className="container mx-auto px-4" style={{ marginTop: 96 }}>
-      <h1 className="text-2xl font-semibold mb-4">Usuarios</h1>
-      <BackButton to="/admin" label="Volver al panel" />
+    <div className="p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Usuarios</h1>
+                <BackButton to="/admin" label="Volver al inicio" />
+        
+        {/* Activaremos esto cuando tengamos POST /users en el backend */}
+        <Button
+          variant="secondary"
+          disabled
+          title="Añadiremos creación cuando exista POST /users"
+        >
+          Nuevo (próximamente)
+        </Button>
+      </div>
 
-      <input
-        placeholder="Buscar por nombre, email o rol"
-        className="border rounded px-3 py-2 mb-4 w-full max-w-md bg-background text-white placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-
-      {loading ? (
-        <div>Cargando…</div>
-      ) : (
-        <div className="overflow-x-auto border rounded">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-2">ID</th>
-                <th className="text-left p-2">Nombre</th>
-                <th className="text-left p-2">Email</th>
-                <th className="text-left p-2">Rol</th>
-                <th className="text-left p-2">Teléfono</th>
-                <th className="text-left p-2">Zona/Dirección</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-t">
-                  <td className="p-2">{u.id}</td>
-                  <td className="p-2">{u.name}</td>
-                  <td className="p-2">{u.email}</td>
-                  <td className="p-2 capitalize">{u.rol}</td>
-                  <td className="p-2">
-                    {u.rol === "vendedor"
-                      ? u.perfil_vendedor?.telefono ?? "—"
-                      : u.perfil_cliente?.telefono ?? "—"}
-                  </td>
-                  <td className="p-2">
-                    {u.rol === "vendedor"
-                      ? u.perfil_vendedor?.zona ?? "—"
-                      : u.perfil_cliente?.direccion ?? "—"}
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && (
-                <tr>
-                  <td className="p-2" colSpan={6}>
-                    Sin resultados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </main>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Correo</TableHead>
+            <TableHead>Rol</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {(data ?? []).map((u) => (
+            <TableRow key={u.id}>
+              <TableCell>{u.id}</TableCell>
+              <TableCell>{u.name}</TableCell>
+              <TableCell>{u.email}</TableCell>
+              <TableCell className="capitalize">{u.rol}</TableCell>
+              <TableCell className="text-right space-x-2">
+                <Button size="sm" variant="outline" onClick={() => handleEdit(u)}>
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(u)}
+                  disabled={deletingId === u.id}
+                >
+                  {deletingId === u.id ? "Eliminando…" : "Eliminar"}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+          {(!data || data.length === 0) && (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                No hay usuarios.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

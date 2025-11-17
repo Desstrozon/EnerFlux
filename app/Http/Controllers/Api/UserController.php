@@ -82,13 +82,13 @@ class UserController extends Controller
         ]);
 
         // crear perfil según rol
-        if (in_array($user->rol, ['vendedor'])) {
+        if ($user->rol === 'vendedor') {
             PerfilVendedor::create([
                 'id_usuario' => $user->id,
                 'telefono'   => $data['telefono'] ?? null,
                 'zona'       => $data['zona'] ?? null,
             ]);
-        } elseif (in_array($user->rol, ['cliente'])) {
+        } elseif ($user->rol === 'cliente') {
             PerfilCliente::create([
                 'id_usuario' => $user->id,
                 'telefono'   => $data['telefono'] ?? null,

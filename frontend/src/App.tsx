@@ -3,20 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import CheckoutCancel from "@/pages/CheckoutCancel";
-import MyOrders from "@/pages/MyOrders";
-// sweetAlert2 
-import 'sweetalert2/dist/sweetalert2.min.css';
-
-
-import "primereact/resources/themes/lara-light-blue/theme.css";
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
-import "./index.css";
-
-// Proveedor PrimeReact (para ripple y asegurar estilos “styled”)
-import { PrimeReactProvider } from "primereact/api";
 
 // Páginas públicas
 import Index from "@/pages/Index";
@@ -24,28 +10,38 @@ import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
-// Rutas protegidas
-import AdminRoute from "@/routes/AdminRoute";
+// Páginas auth del cliente
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import CheckoutCancel from "@/pages/CheckoutCancel";
+import MyOrders from "@/pages/MyOrders";
+import Profile from "@/pages/Profile";
 
-// Páginas del administrador
+// Admin
+import AdminRoute from "@/routes/AdminRoute";
 import AdminIndex from "@/pages/admin/Index";
-import UsersAdmin from "@/pages/admin/Users";
+import UsersAdmin from "@/pages/admin/Users"; // <- ÚNICO componente para lista y edición
 import VendedoresAdmin from "@/pages/admin/Vendedores";
 import ProductosAdmin from "@/pages/admin/Productos";
 
-// 🛒 Contexto del carrito
+// PrimeReact y estilos
+import { PrimeReactProvider } from "primereact/api";
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "./index.css";
+import "sweetalert2/dist/sweetalert2.min.css";
+
+// 🛒 Carrito
 import { CartProvider } from "@/context/CartContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <PrimeReactProvider value={{ ripple: true  }}>
+  <PrimeReactProvider value={{ ripple: true }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-
-        {/* Carrito disponible en toda la app */}
         <CartProvider>
           <BrowserRouter>
             <Routes>
@@ -54,7 +50,13 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />
-              
+
+              {/* Cliente autenticado */}
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+              <Route path="/mis-pedidos" element={<MyOrders />} />
+              <Route path="/profile" element={<Profile />} />
+
               {/* Panel administrador */}
               <Route
                 path="/admin"
@@ -66,6 +68,15 @@ const App = () => (
               />
               <Route
                 path="/admin/usuarios"
+                element={
+                  <AdminRoute>
+                    <UsersAdmin />
+                  </AdminRoute>
+                }
+              />
+              {/* Usa el mismo componente para edición por :id */}
+              <Route
+                path="/admin/usuarios/:id"
                 element={
                   <AdminRoute>
                     <UsersAdmin />
@@ -88,10 +99,6 @@ const App = () => (
                   </AdminRoute>
                 }
               />
-              <Route path="/checkout/success" element={<CheckoutSuccess />} />
-              <Route path="/checkout/cancel" element={<CheckoutCancel />} />
-              <Route path="/mis-pedidos" element={<MyOrders />} />
-
             </Routes>
           </BrowserRouter>
         </CartProvider>

@@ -14,9 +14,14 @@ export default defineConfig({
     port: 8080,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8000", // o tu IP: http://192.168.8.44:8000
+        target: "http://192.168.1.50:8000", // BACKEND en tu LAN
+        changeOrigin: true,
+      },
+      "/storage": {
+        target: "http://192.168.1.50:8000", // para imágenes de Storage
         changeOrigin: true,
       },
     },
   },
+
 });

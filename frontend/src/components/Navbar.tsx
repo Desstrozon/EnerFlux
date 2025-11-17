@@ -4,7 +4,7 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import CartSidebar from "@/components/CartSidebar";
-import { confirm, alertSuccess, alertError } from "@/lib/alerts";
+import { confirm, alertSuccess } from "@/lib/alerts";
 
 type UserMini = { name?: string; rol?: string };
 
@@ -15,7 +15,7 @@ const Navbar = () => {
   const { totalItems } = useCart();
   const itemCount = totalItems;
 
-  const [showCart, setShowCart] = useState(false); //  Controla visibilidad del sidebar
+  const [showCart, setShowCart] = useState(false);
 
   const refreshAuth = () => {
     const raw = localStorage.getItem("user");
@@ -42,11 +42,7 @@ const Navbar = () => {
   const isLoggedIn = !!authUser;
 
   const logout = async () => {
-    const ok = await confirm(
-      "Cerrar sesión",
-      "¿Seguro que quieres salir?",
-      "Sí, salir"
-    );
+    const ok = await confirm("Cerrar sesión", "¿Seguro que quieres salir?", "Sí, salir");
     if (!ok) return;
 
     const token = localStorage.getItem("token");
@@ -59,7 +55,7 @@ const Navbar = () => {
         },
       });
     } catch {
-
+      // silencioso
     }
 
     localStorage.removeItem("token");
@@ -72,7 +68,7 @@ const Navbar = () => {
 
   const active = (path: string) =>
     location.pathname === path ||
-      (path === "/admin" && location.pathname.startsWith("/admin"))
+    (path === "/admin" && location.pathname.startsWith("/admin"))
       ? "text-primary font-medium"
       : "text-foreground";
 
@@ -111,40 +107,31 @@ const Navbar = () => {
 
           {/* Centro */}
           <div className="hidden md:flex items-center gap-8">
-            <a
-              href="#inicio"
-              className="text-foreground hover:text-primary transition-colors"
-            >
+            <a href="#inicio" className="text-foreground hover:text-primary transition-colors">
               Inicio
             </a>
-            <a
-              href="#productos"
-              className="text-foreground hover:text-primary transition-colors"
-            >
+            <a href="#productos" className="text-foreground hover:text-primary transition-colors">
               Productos
             </a>
-            <a
-              href="#proveedores"
-              className="text-foreground hover:text-primary transition-colors"
-            >
+            <a href="#proveedores" className="text-foreground hover:text-primary transition-colors">
               Proveedores
             </a>
-            <a
-              href="#contacto"
-              className="text-foreground hover:text-primary transition-colors"
-            >
+            <a href="#contacto" className="text-foreground hover:text-primary transition-colors">
               Contacto
             </a>
+
             {isLoggedIn && (
-              <NavLink to="/mis-pedidos" className="...">Mis pedidos</NavLink>
+              <>
+                <NavLink to="/mis-pedidos" className="text-foreground hover:text-primary transition-colors">
+                  Mis pedidos
+                </NavLink>               
+              </>
             )}
+
             {isAdmin && (
               <>
                 <span className="opacity-30">|</span>
-                <NavLink
-                  to="/admin"
-                  className={`transition-colors ${active("/admin")}`}
-                >
+                <NavLink to="/admin" className={`transition-colors ${active("/admin")}`}>
                   Panel (Admin)
                 </NavLink>
               </>
@@ -154,10 +141,7 @@ const Navbar = () => {
           {/* Derecha */}
           <div className="flex items-center gap-4">
             {/* 🛒 Carrito */}
-            <div
-              className="relative cursor-pointer"
-              onClick={() => setShowCart(true)} // 👈 abre el carrito
-            >
+            <div className="relative cursor-pointer" onClick={() => setShowCart(true)}>
               <i className="pi pi-shopping-cart text-xl text-foreground hover:text-primary transition"></i>
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
@@ -172,17 +156,20 @@ const Navbar = () => {
                 <span className="hidden sm:inline text-sm text-muted-foreground">
                   {authUser.name} · {authUser.rol}
                 </span>
+
+                {/* 👤 Nuevo botón Perfil a la derecha */}
+                <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Perfil
+                </Button>
+
                 <Button variant="outline" size="sm" onClick={logout}>
                   Cerrar sesión
                 </Button>
               </>
             ) : (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/login")}
-                >
+                <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
                   <User className="h-4 w-4 mr-2" />
                   Ingresar
                 </Button>

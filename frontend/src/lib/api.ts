@@ -1,7 +1,7 @@
 // src/lib/api.ts
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-// Ej.: VITE_API_BASE_URL = "http://localhost:8000/api"
+// Ej.: VITE_API_BASE_URL = "http://192.168.1.50:8000/api"
 export const API_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
 
@@ -19,10 +19,6 @@ export function authHeaders(extra?: Record<string, string>) {
   };
 }
 
-/**
- * Peticiones HTTP genéricas.
- * Ahora soporta también FormData (archivos/imágenes).
- */
 async function request<T>(
   method: HttpMethod,
   path: string,
@@ -32,7 +28,6 @@ async function request<T>(
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {};
 
-  // ✅ solo aplicamos Content-Type si NO es FormData
   if (!isFormData) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
   headers["Accept"] = "application/json";
@@ -41,7 +36,8 @@ async function request<T>(
     method,
     headers,
     body: isFormData ? body : body ? JSON.stringify(body) : undefined,
-    credentials: "include",
+    //  CLAVE: en Bearer, sin cookies
+    credentials: "omit",
   });
 
   if (!res.ok) {
@@ -55,24 +51,25 @@ async function request<T>(
     throw err;
   }
 
+  // Puede venir 204 (sin cuerpo)
   if (res.status === 204) return undefined as T;
+
+  const ct = res.headers.get("content-type") || "";
+  if (!ct.includes("application/json")) return undefined as T;
+
   return (await res.json()) as T;
 }
 
-// Métodos específicos
-export const apiGet = <T,>(path: string) => request<T>("GET", path);
-
+export const apiGet =  <T,>(path: string) => request<T>("GET", path);
 export const apiPost = <T,>(path: string, d?: any, isFormData = false) =>
   request<T>("POST", path, d, isFormData);
-export const apiPut = <T,>(path: string, d?: any, isFormData = false) =>
+export const apiPut  = <T,>(path: string, d?: any, isFormData = false) =>
   request<T>("PUT", path, d, isFormData);
-
 export const apiPatch = <T,>(path: string, d?: any) =>
   request<T>("PATCH", path, d);
+export const apiDelete = <T,>(path: string) =>
+  request<T>("DELETE", path);
 
-export const apiDelete = <T,>(path: string) => request<T>("DELETE", path);
-
-// Objeto de conveniencia
 export const API = {
   url: API_URL,
   get: apiGet,
