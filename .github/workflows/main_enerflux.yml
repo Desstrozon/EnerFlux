@@ -13,8 +13,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write        # necesario para azure/login con federated identity
-      contents: read         # necesario para actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout repo
@@ -26,7 +26,7 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install PHP dependencies (composer)
+      - name: Install PHP dependencies
         run: |
           composer install --no-interaction --prefer-dist --optimize-autoloader
 
@@ -40,11 +40,10 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Build frontend (Vite)
+      - name: Build frontend
         working-directory: ./frontend
         env:
-          # cuando todo funcione, si cambias de dominio, actualizas aquí también
-          VITE_API_BASE_URL: "https://enerflux.azurewebsites.net/api"
+          VITE_API_BASE_URL: "https://enerflux-h2dga2ajeda7cnb7.spaincentral-01.azurewebsites.net/api"
         run: npm run build
 
       - name: Copy frontend build to Laravel public/frontend
@@ -67,3 +66,4 @@ jobs:
           app-name: 'Enerflux'  
           package: .
           
+
