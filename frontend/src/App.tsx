@@ -49,7 +49,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <CartProvider>
-          <BrowserRouter>
+          <BrowserRouter basename="/frontend">
             <Routes>
               {/* Todo lo de aquí dentro tendrá Navbar (SiteLayout) */}
               <Route element={<SiteLayout />}>
