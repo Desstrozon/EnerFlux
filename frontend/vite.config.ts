@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: mode === "production" ? "/frontend/" : "/",
+  
+  base: "/",
+
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -24,10 +26,11 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+
   build: {
     rollupOptions: {
       output: {
-        entryFileNames: "assets/app.js",      
+        entryFileNames: "assets/app.js",
         chunkFileNames: "assets/[name].js",
         assetFileNames: "assets/[name].[ext]",
       },
