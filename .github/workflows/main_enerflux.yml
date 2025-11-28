@@ -51,6 +51,12 @@ jobs:
           rm -rf public/frontend
           mkdir -p public/frontend
           cp -r frontend/dist/* public/frontend/
+          rm -rf frontend/node_modules frontend/dist
+
+      # OPCIONAL: evitar que llegue el index.html de desarrollo al zip
+      - name: Remove dev frontend index.html from artifact
+        run: |
+          if [ -f frontend/index.html ]; then rm frontend/index.html; fi
 
       # ---------- DEPLOY A AZURE ----------
       - name: Login to Azure
@@ -63,7 +69,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Enerflux'  
+          app-name: 'Enerflux'
           package: .
-          
-
