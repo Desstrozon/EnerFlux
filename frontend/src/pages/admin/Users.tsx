@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { apiGet, apiDelete, apiPut, apiPost } from "@/lib/api";
+import { apiGet, apiPutJson, apiPostJson, API_BASE } from "@/lib/http";
+
 
 import {
   Table,
@@ -224,7 +225,7 @@ export default function UsersAdmin() {
         payload.message = editForm.message || null;
       }
 
-      await apiPut(`/users/${editUser.id}`, payload);
+      await apiPutJson(`/users/${editUser.id}`, payload);
 
       await alertSuccess("Usuario actualizado.");
       setEditUser(null);
@@ -241,26 +242,41 @@ export default function UsersAdmin() {
     }
   };
 
-  const handleDelete = async (u: UserRow) => {
-    const ok = await confirm(
-      "Eliminar usuario",
-      `¿Seguro que quieres eliminar a “${u.name}”? Esta acción no se puede deshacer.`,
-      "Eliminar"
-    );
-    if (!ok) return;
+ const handleDelete = async (u: UserRow) => {
+  const ok = await confirm(
+    "Eliminar usuario",
+    `¿Seguro que quieres eliminar a “${u.name}”? Esta acción no se puede deshacer.`,
+    "Eliminar"
+  );
+  if (!ok) return;
 
-    try {
-      setDeletingId(u.id);
-      await apiDelete(`/users/${u.id}`);
-      await alertSuccess("Usuario eliminado.");
-      await load();
-    } catch (e) {
-      console.error(e);
-      await alertError("No se pudo eliminar el usuario.");
-    } finally {
-      setDeletingId(null);
+  try {
+    setDeletingId(u.id);
+
+    const token = localStorage.getItem("token") || "";
+    const res = await fetch(`${API_BASE}/users/${u.id}`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || `No se pudo eliminar (HTTP ${res.status}).`);
     }
-  };
+
+    await alertSuccess("Usuario eliminado.");
+    await load();
+  } catch (e: any) {
+    console.error(e);
+    await alertError(e?.message || "No se pudo eliminar el usuario.");
+  } finally {
+    setDeletingId(null);
+  }
+};
+
 
   // ==========================
   // CREACIÓN
@@ -303,7 +319,7 @@ export default function UsersAdmin() {
         payload.message = createForm.message || null;
       }
 
-      await apiPost("/users", payload);
+      await apiPostJson("/users", payload);
 
       await alertSuccess("Usuario creado correctamente.");
       setCreateOpen(false);

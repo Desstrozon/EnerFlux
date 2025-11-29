@@ -11,7 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { alertSuccess, alertError, confirm } from "@/lib/alerts";
-import { apiGet, apiPut } from "@/lib/api";
+import { apiGet, apiPutJson } from "@/lib/http";
 import { Loader2, Lock, Save, Undo2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 
@@ -179,14 +179,15 @@ export default function UserProfile() {
       }
 
       try {
-        await apiPut("/me", body);
+        //  AHORA usamos apiPutJson
+        await apiPutJson("/me", body);
       } catch (e: any) {
-        const status = e?.response?.status;
+        const status = e?.status;   //  http.ts pone e.status
 
         if (status === 404 || status === 405) {
           // solo si el endpoint /me no existe en ese backend
           if (me?.id) {
-            await apiPut(`/users/${me.id}`, body);
+            await apiPutJson(`/users/${me.id}`, body);
           } else {
             throw new Error("No hay ID de usuario");
           }
@@ -195,7 +196,6 @@ export default function UserProfile() {
           throw e;
         }
       }
-
 
       // refresh cache local
       const next = { ...(me as any) };
@@ -217,6 +217,7 @@ export default function UserProfile() {
       setSaving(false);
     }
   };
+
 
   /* -------- Cancelar -------- */
   const onCancel = async () => {
@@ -256,7 +257,7 @@ export default function UserProfile() {
         await alertError("La confirmación no coincide.");
         return;
       }
-      await apiPut("/me/password", pwd);
+      await apiPutJson("/me/password", pwd);
       setPwdOpen(false);
       setPwd({ current_password: "", password: "", password_confirmation: "" });
       await alertSuccess("Contraseña actualizada");

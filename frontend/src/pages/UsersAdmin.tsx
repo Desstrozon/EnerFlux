@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPut } from "@/lib/api";
+import { apiGet, apiPutJson } from "@/lib/http";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -82,7 +82,7 @@ export default function UsersAdmin() {
         body.direccion = current.direccion ?? "";
       }
 
-      await apiPut(`/users/${current.id}`, body);
+      await apiPutJson(`/users/${current.id}`, body);
       toast.success("Usuario actualizado");
       setOpen(false);
       setCurrent(null);
