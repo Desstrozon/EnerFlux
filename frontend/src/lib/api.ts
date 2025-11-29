@@ -1,29 +1,47 @@
 // src/lib/api.ts
-// Este archivo es solo un WRAPPER para mantener compatibilidad
-// Todo se redirige internamente a http.ts
+// Wrapper para mantener compatibilidad con el código antiguo.
+// Internamente delega en http.ts
 
 import {
-  apiGet as get,
-  apiPostJson as postJson,
+  apiGet as httpGet,
+  apiPostJson as httpPostJson,
+  apiDelete as httpDelete,
+  apiPutJson as httpPutJson,
+  apiPatchJson as httpPatchJson,
 } from "./http";
 
-// URL base unificada
+// URL base
 export const API_URL =
   import.meta.env.VITE_API_BASE_URL ??
-  "https://enerflux-h2dga2ajeda7cnb7.spaincentral-01.azurewebsites.net/api";
+  "http://127.0.0.1:8000/api";
 
 // GET
-export const apiGet = <T,>(path: string) => get<T>(path);
+export const apiGet = <T,>(path: string) => httpGet<T>(path);
 
-// POST (JSON)
+// POST JSON
 export const apiPost = <T,>(path: string, data?: any) =>
-  postJson<T>(path, data);
+  httpPostJson<T>(path, data);
 
-// Compatibilidad con llamadas antiguas
+// DELETE
+export const apiDelete = <T,>(path: string) =>
+  httpDelete<T>(path);
+
+// PUT
+export const apiPut = <T,>(path: string, data?: any) =>
+  httpPutJson<T>(path, data);
+
+// PATCH
+export const apiPatch = <T,>(path: string, data?: any) =>
+  httpPatchJson<T>(path, data);
+
+// Objeto API unificado (para código antiguo)
 export const API = {
   url: API_URL,
   get: apiGet,
   post: apiPost,
+  delete: apiDelete,
+  put: apiPut,
+  patch: apiPatch
 };
 
 export default API;

@@ -2,12 +2,12 @@
 
 const API_BASE =
   import.meta.env.MODE === "production"
-    ? import.meta.env.VITE_API_BASE_URL
+    ? "https://enerflux-h2dga2ajeda7cnb7.spaincentral-01.azurewebsites.net/api"
     : "http://127.0.0.1:8000/api";
 
 async function handleJson(res: Response) {
   const text = await res.text();
-  let data: any = null;
+  let data = null;
   try {
     data = text ? JSON.parse(text) : null;
   } catch {}
@@ -15,36 +15,67 @@ async function handleJson(res: Response) {
   if (!res.ok) {
     const err: any = new Error(data?.message || "Error en la petición");
     err.status = res.status;
-    err.details = data;
-    err.errors = data?.errors;
+    err.data = data;
     throw err;
   }
-
   return data;
 }
 
-export async function apiPostJson<T = any>(path: string, body: any): Promise<T> {
+// ====== MÉTODOS HTTP GENÉRICOS ======
+
+export async function apiGet<T = any>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    credentials: "omit",
+  });
+  return handleJson(res);
+}
+
+export async function apiPostJson<T = any>(path: string, body?: any): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(body),
-    credentials: "include",
+    body: JSON.stringify(body ?? {}),
+    credentials: "omit",
   });
   return handleJson(res);
 }
 
-export async function apiGet<T = any>(path: string): Promise<T> {
-  const token = localStorage.getItem("token") || "";
+export async function apiPutJson<T = any>(path: string, body?: any): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    method: "GET",
+    method: "PUT",
     headers: {
+      "Content-Type": "application/json",
       Accept: "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
     },
-    credentials: "include",
+    body: JSON.stringify(body ?? {}),
+    credentials: "omit",
+  });
+  return handleJson(res);
+}
+
+export async function apiPatchJson<T = any>(path: string, body?: any): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(body ?? {}),
+    credentials: "omit",
+  });
+  return handleJson(res);
+}
+
+export async function apiDelete<T = any>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+    credentials: "omit",
   });
   return handleJson(res);
 }
