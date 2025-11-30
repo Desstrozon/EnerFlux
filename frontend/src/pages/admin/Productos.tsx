@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPostForm, apiDelete } from "@/lib/http";
+import { apiGet, apiPostForm, apiDelete, APP_BASE } from "@/lib/http";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ export default function ProductosAdmin() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
 
   const [galeriaPreviewNuevos, setGaleriaPreviewNuevos] = useState<string[]>([]);
-  const base = (import.meta.env.VITE_API_BASE_URL as string).replace("/api", "");
+  const base = APP_BASE;
 
   const categorias = ["panel", "bateria", "inversor", "accesorio"];
 

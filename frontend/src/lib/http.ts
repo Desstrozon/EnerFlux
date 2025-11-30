@@ -17,6 +17,9 @@ export async function apiPost<T = any>(path: string, body: any): Promise<T> {
   return apiPostJson<T>(path, body);
 }
 
+export const APP_BASE = API_BASE
+  .replace(/\/api$/, "")        // quita el /api final
+  .replace(/\/index\.php$/, ""); 
 
 // POST FormData (subida de imágenes, etc.)
 export async function apiPostForm<T = any>(

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ShoppingCart, ArrowLeft, Trash2 } from "lucide-react";
-import { apiGet, apiPost, apiDelete } from "@/lib/http";
+import { apiGet, apiPost, apiDelete, APP_BASE } from "@/lib/http";
 import { useCart } from "@/context/CartContext";
 import { alertError, alertSuccess, confirm } from "@/lib/alerts";
 import StarRating from "@/components/StarRating";
@@ -82,11 +82,11 @@ export default function ProductDetail() {
 
   const [myReactions, setMyReactions] = useState<Record<number, "like" | "dislike">>({});
   useEffect(() => {
-    try { const raw = localStorage.getItem("reviewReactions"); if (raw) setMyReactions(JSON.parse(raw)); } catch {}
+    try { const raw = localStorage.getItem("reviewReactions"); if (raw) setMyReactions(JSON.parse(raw)); } catch { }
   }, []);
   const saveReactions = (next: Record<number, "like" | "dislike">) => {
     setMyReactions(next);
-    try { localStorage.setItem("reviewReactions", JSON.stringify(next)); } catch {}
+    try { localStorage.setItem("reviewReactions", JSON.stringify(next)); } catch { }
   };
 
   const fetchReviews = async (productId: string | number) => {
@@ -121,7 +121,8 @@ export default function ProductDetail() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
 
   // === GALERÍA ===
-  const base = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
+  const base = APP_BASE;
+
   const mainUrl = p?.imagen ? `${base}/storage/${p.imagen}` : null;
 
   // construimos el array de imágenes de galería
@@ -180,7 +181,7 @@ export default function ProductDetail() {
     }));
     const next = { ...myReactions, [rid]: type };
     saveReactions(next);
-    try { await apiPost(`/reviews/${rid}/react`, { type }); } catch {}
+    try { await apiPost(`/reviews/${rid}/react`, { type }); } catch { }
   };
 
   const canDelete = (r: Review) => !!me && (isAdmin || me.id === r.user_id);

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, ShoppingCart } from "lucide-react";
-import { apiGet } from "@/lib/http";
+import { apiGet,APP_BASE } from "@/lib/http";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import StarRating from "@/components/StarRating";
@@ -118,8 +118,8 @@ export default function ProductShowcase() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((p) => {
             const imgUrl = p.imagen
-              ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/storage/${p.imagen}`
-              : "/default.png";
+  ? `${APP_BASE}/storage/${p.imagen}`
+  : "/default.png";
             const disponible = p.disponible ?? ((p.stock ?? 0) > 0);
             const r = ratings[p.id_producto] || { avg: 0, count: 0 };
 
