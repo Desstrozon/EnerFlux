@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPost, apiDelete } from "@/lib/api";
+import { apiGet, apiPostForm, apiDelete } from "@/lib/http";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/BackButton";
 import { Input } from "@/components/ui/input";
@@ -163,10 +163,10 @@ export default function ProductosAdmin() {
 
       if (form.id_producto) {
         fd.append("_method", "PUT");
-        await apiPost(`/productos/${form.id_producto}`, fd, true);
+        await apiPostForm(`/productos/${form.id_producto}`, fd);
         toastSuccess("Producto actualizado");
       } else {
-        await apiPost(`/productos`, fd, true);
+        await apiPostForm(`/productos`, fd);
         toastSuccess("Producto creado");
       }
 

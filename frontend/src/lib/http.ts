@@ -18,6 +18,25 @@ export async function apiPost<T = any>(path: string, body: any): Promise<T> {
 }
 
 
+// POST FormData (subida de imágenes, etc.)
+export async function apiPostForm<T = any>(
+  path: string,
+  body: FormData
+): Promise<T> {
+  const token = localStorage.getItem("token") || "";
+  const res = await fetch(buildUrl(path), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // OJO: NO ponemos "Content-Type": el navegador añade el boundary
+    },
+    body,
+    credentials: "omit",
+  });
+  return handleJson(res);
+}
+
 
 // Normaliza URL: admite paths con o sin barra inicial
 function buildUrl(path: string) {

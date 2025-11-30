@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet } from "@/lib/http";
 import BackButton from "@/components/BackButton";
 
 type PerfilVend = { telefono?: string | null; zona?: string | null; brand?: string | null; };
