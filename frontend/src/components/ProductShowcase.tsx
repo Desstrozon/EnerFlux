@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, ShoppingCart } from "lucide-react";
-import { apiGet,APP_BASE } from "@/lib/http";
+import { apiGet, APP_BASE } from "@/lib/http";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import StarRating from "@/components/StarRating";
@@ -117,9 +117,25 @@ export default function ProductShowcase() {
         {/* Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((p) => {
-            const imgUrl = p.imagen
-  ? `${APP_BASE}/storage/${p.imagen}`
-  : "/default.png";
+            const imgUrl = (() => {
+              if (!p.imagen) return "/default.png";
+
+              // Si ya viene como URL absoluta
+              if (p.imagen.startsWith("http://") || p.imagen.startsWith("https://")) {
+                return p.imagen;
+              }
+
+              // Si ya incluye /storage/... en el propio campo
+              if (p.imagen.includes("/storage/")) {
+                // ej: "/storage/productos/aaa.jpg" o "storage/productos/aaa.jpg"
+                const rel = p.imagen.startsWith("/") ? p.imagen : `/${p.imagen}`;
+                return `${APP_BASE}${rel}`;
+              }
+
+              // Caso normal: solo guardamos "productos/aaa.jpg"
+              return `${APP_BASE}/storage/${p.imagen}`;
+            })();
+
             const disponible = p.disponible ?? ((p.stock ?? 0) > 0);
             const r = ratings[p.id_producto] || { avg: 0, count: 0 };
 
@@ -137,6 +153,7 @@ export default function ProductShowcase() {
                       (disponible ? "group-hover:scale-110" : "grayscale opacity-70")
                     }
                   />
+                  
                   <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                     {p.categoria}
                   </div>
