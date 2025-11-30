@@ -1,14 +1,15 @@
 // src/lib/http.ts
 
 // ==== BASE URL ====
-// 1º usa VITE_API_BASE_URL (la que tienes en Azure con /index.php/api)
-// 2º si no existe, en prod: window.location.origin + "/index.php/api"
-// 3º en dev: 127.0.0.1:8000/api
+// PROD: siempre {origin}/index.php/api  (Azure)
+// DEV: VITE_API_BASE_URL o 127.0.0.1:8000/api
 export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.MODE === "production"
+  import.meta.env.MODE === "production"
     ? `${window.location.origin}/index.php/api`
-    : "http://127.0.0.1:8000/api");
+    : (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api");
+
+// (Opcional, pero muy útil ahora)
+console.log("API_BASE = ", API_BASE);
 
 // Normaliza URL: admite paths con o sin barra inicial
 function buildUrl(path: string) {
@@ -33,7 +34,9 @@ async function handleJson(res: Response) {
 
     if (data?.errors) {
       try {
-        const flat = Object.values(data.errors).flat().join(" ");
+        const flat = (Object.values(data.errors) as any[])
+          .flat()
+          .join(" ");
         if (flat) msg = flat;
       } catch {}
     }
