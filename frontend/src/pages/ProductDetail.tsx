@@ -123,8 +123,17 @@ export default function ProductDetail() {
   // === GALERÍA ===
   const base = APP_BASE;
 
-  const mainUrl = p?.imagen ? `${base}/storage/${p.imagen}` : null;
+  const mainRelOrUrl =
+    p?.imagen ||
+    (Array.isArray(p?.images) && p!.images!.length
+      ? (p!.images![0].url || p!.images![0].path || "")
+      : "");
 
+      const mainUrl = mainRelOrUrl
+  ? mainRelOrUrl.startsWith("http")
+    ? mainRelOrUrl
+    : `${base}/storage/${mainRelOrUrl.replace(/^storage\//, "")}`
+  : null;
   // construimos el array de imágenes de galería
   const gallery: string[] = (() => {
     const urls: string[] = [];

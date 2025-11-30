@@ -445,14 +445,31 @@ export default function ProductosAdmin() {
             </thead>
             <tbody>
               {productos.map((p) => {
-                const imgUrl = p.imagen ? `${base}/storage/${p.imagen}` : "/default.png";
+                // intentamos sacar una ruta/URL de imagen de varios sitios
+                const relOrUrl =
+                  p.imagen ||
+                  (Array.isArray(p.images) && p.images.length
+                    ? (p.images[0].path || p.images[0].url || "")
+                    : "");
+
+                const imgUrl = relOrUrl
+                  ? relOrUrl.startsWith("http")
+                    ? relOrUrl
+                    : `${base}/storage/${relOrUrl.replace(/^storage\//, "")}`
+                  : "/default.png";
+
                 return (
                   <tr key={p.id_producto} className="border-t">
                     <td className="p-2">{p.id_producto}</td>
                     <td className="p-2">
-                      {p.vendedor_nombre ?? (p as any).vendedor_name ?? p.id_vendedor ?? "—"}                    </td>
+                      {p.vendedor_nombre ?? (p as any).vendedor_name ?? p.id_vendedor ?? "—"}
+                    </td>
                     <td className="p-2">
-                      <img src={imgUrl} alt={p.nombre} className="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" />
+                      <img
+                        src={imgUrl}
+                        alt={p.nombre}
+                        className="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform"
+                      />
                     </td>
                     <td className="p-2">{p.nombre}</td>
                     <td className="p-2">{p.categoria}</td>

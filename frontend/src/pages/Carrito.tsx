@@ -1,5 +1,6 @@
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
+import { APP_BASE } from "@/lib/http";
 
 export default function Carrito() {
   const { carrito, removeFromCart, clearCart } = useCart();
@@ -27,7 +28,9 @@ export default function Carrito() {
               <img
                 src={
                   item.imagen
-                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/storage/${item.imagen}`
+                    ? item.imagen.startsWith("http")
+                      ? item.imagen
+                      : `${APP_BASE}/storage/${item.imagen.replace(/^storage\//, "")}`
                     : "/default.png"
                 }
                 alt={item.nombre}

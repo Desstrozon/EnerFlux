@@ -117,24 +117,17 @@ export default function ProductShowcase() {
         {/* Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((p) => {
-            const imgUrl = (() => {
-              if (!p.imagen) return "/default.png";
+            const relOrUrl =
+              p.imagen ||
+              (Array.isArray((p as any).images) && (p as any).images.length
+                ? ((p as any).images[0].path || (p as any).images[0].url || "")
+                : "");
 
-              // Si ya viene como URL absoluta
-              if (p.imagen.startsWith("http://") || p.imagen.startsWith("https://")) {
-                return p.imagen;
-              }
-
-              // Si ya incluye /storage/... en el propio campo
-              if (p.imagen.includes("/storage/")) {
-                // ej: "/storage/productos/aaa.jpg" o "storage/productos/aaa.jpg"
-                const rel = p.imagen.startsWith("/") ? p.imagen : `/${p.imagen}`;
-                return `${APP_BASE}${rel}`;
-              }
-
-              // Caso normal: solo guardamos "productos/aaa.jpg"
-              return `${APP_BASE}/storage/${p.imagen}`;
-            })();
+            const imgUrl = relOrUrl
+              ? relOrUrl.startsWith("http")
+                ? relOrUrl
+                : `${APP_BASE}/storage/${relOrUrl.replace(/^storage\//, "")}`
+              : "/default.png";
 
             const disponible = p.disponible ?? ((p.stock ?? 0) > 0);
             const r = ratings[p.id_producto] || { avg: 0, count: 0 };
@@ -153,7 +146,7 @@ export default function ProductShowcase() {
                       (disponible ? "group-hover:scale-110" : "grayscale opacity-70")
                     }
                   />
-                  
+
                   <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                     {p.categoria}
                   </div>
