@@ -65,7 +65,6 @@ const App = () => (
                 <Route path="/producto/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="*" element={<NotFound />} />
                 <Route path="/estudio-personalizado" element={<EstudioPersonalizado />} />
                 <Route path="/contacto" element={<Contacto />} /> 
 
@@ -125,6 +124,9 @@ const App = () => (
                     </AdminRoute>
                   }
                 />
+
+                {/* 404 - Debe ir al final */}
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </BrowserRouter>
