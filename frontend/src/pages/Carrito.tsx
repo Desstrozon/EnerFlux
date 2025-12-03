@@ -1,6 +1,6 @@
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { APP_BASE } from "@/lib/http";
+import { buildImageUrl } from "@/lib/http";
 
 export default function Carrito() {
   const { carrito, removeFromCart, clearCart } = useCart();
@@ -26,13 +26,7 @@ export default function Carrito() {
           >
             <div className="flex items-center gap-4">
               <img
-                src={
-                  item.imagen
-                    ? item.imagen.startsWith("http")
-                      ? item.imagen
-                      : `${APP_BASE}/storage/${item.imagen.replace(/^storage\//, "")}`
-                    : `${APP_BASE}/default.png`
-                }
+                src={buildImageUrl(item.imagen)}
                 alt={item.nombre}
                 className="w-16 h-16 object-cover rounded"
               />
