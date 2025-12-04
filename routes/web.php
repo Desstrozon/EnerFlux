@@ -28,7 +28,7 @@ Route::get('/storage/{path}', function ($path) {
 
 // Catch-all para React Router: todas las rutas /frontend/* sirven el index.html
 Route::get('/frontend/{any}', function () {
-    $indexPath = public_path('frontend/index.html');
+    $indexPath = public_path('frontend/');
     if (file_exists($indexPath)) {
         return response()->file($indexPath);
     }
