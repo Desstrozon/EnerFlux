@@ -45,7 +45,7 @@ jobs:
         env:
           VITE_API_BASE_URL: "https://enerflux-h2dga2ajeda7cnb7.spaincentral-01.azurewebsites.net/api"
 
-      # Aquí sustituimos la carpeta frontend del repo por el build de Vite
+      # Reemplazar carpeta frontend con el build
       - name: Replace frontend folder with built assets
         run: |
           # Guardar el build en una carpeta temporal
