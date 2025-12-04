@@ -25,3 +25,21 @@ Route::get('/storage/{path}', function ($path) {
 
     return response()->file($file);
 })->where('path', '.*');
+
+// Servir archivos estáticos de frontend
+Route::get('/frontend/assets/{path}', function ($path) {
+    $file = base_path('frontend/assets/' . $path);
+    if (file_exists($file)) {
+        return response()->file($file);
+    }
+    abort(404);
+})->where('path', '.*');
+
+// Catch-all para React Router
+Route::get('/frontend/{any?}', function () {
+    $indexPath = base_path('frontend/index.html');
+    if (file_exists($indexPath)) {
+        return response()->file($indexPath);
+    }
+    abort(404, 'Frontend not found');
+})->where('any', '.*');
