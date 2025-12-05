@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import SiteLayout from "@/layouts/SiteLayout";
@@ -49,7 +50,17 @@ const routerBasename =
     ? "/frontend"
     : "/";  
 
-const App = () => (
+const App = () => {
+  // Manejar redirección desde 404.html
+  React.useEffect(() => {
+    const redirectPath = sessionStorage.getItem('redirectPath');
+    if (redirectPath) {
+      sessionStorage.removeItem('redirectPath');
+      window.history.replaceState(null, '', redirectPath);
+    }
+  }, []);
+
+  return (
   <PrimeReactProvider value={{ ripple: true }}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -134,6 +145,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </PrimeReactProvider>
-);
+  );
+};
 
 export default App;
