@@ -18,7 +18,7 @@
               <img src="{{ rtrim(config('app.url'), '/') }}/public/brand/Enerflux.png"
                 alt="Enerflux"
                 width="120"
-                style="display:block; margin:0 auto 8px; max-width:120px; height:auto; background:white; padding:8px; border-radius:8px;">
+                style="display:block; margin:0 auto 8px; max-width:120px; height:auto;">
               <p style="margin:0; font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#e5e7eb;">
                 Confirmación de pedido
               </p>
