@@ -15,10 +15,10 @@
           <!-- Encabezado con logo -->
           <tr>
             <td style="padding:20px 24px 12px; text-align:center; background:linear-gradient(135deg,#6d28d9,#a855f7);">
-              <img src="{{ config('app.url') }}/brand/Enerflux.png"
+              <img src="{{ rtrim(config('app.url'), '/') }}/public/brand/Enerflux.png"
                 alt="Enerflux"
                 width="120"
-                style="display:block; margin:0 auto 8px; max-width:120px; height:auto;">
+                style="display:block; margin:0 auto 8px; max-width:120px; height:auto; background:white; padding:8px; border-radius:8px;">
               <p style="margin:0; font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:#e5e7eb;">
                 Confirmación de pedido
               </p>
@@ -68,7 +68,7 @@
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:20px 0 16px; width:100%;">
                 <tr>
                   <td align="center" style="padding:0 4px;">
-                    <a href="{{ config('app.url') }}/frontend/#/checkout/success?session_id={{ $order->stripe_session_id }}"
+                    <a href="{{ config('app.url') }}/frontend/#/mis-pedidos"
                       style="display:inline-block; padding:12px 24px; border-radius:8px;
                              background:linear-gradient(135deg,#10b981,#059669);
                              color:#ffffff; text-decoration:none; font-size:14px; font-weight:600;
