@@ -4,11 +4,26 @@ import Features from "@/components/Features";
 import ProductShowcase from "@/components/ProductShowcase";
 import Footer from "@/components/Footer";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ensureScrollTo } from "@/lib/scroll";
+import { alertSuccess } from "@/lib/alerts";
 
 const Index = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Detectar pago exitoso
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const payment = params.get('payment');
+    const sessionId = params.get('session_id');
+    
+    if (payment === 'success' && sessionId) {
+      alertSuccess('¡Pago completado!', 'Tu pedido ha sido procesado correctamente.');
+      // Limpiar URL
+      navigate('/', { replace: true });
+    }
+  }, [location.search, navigate]);
 
   useEffect(() => {
     // Soporta ?scroll=productos, state.scrollTo y #hash
