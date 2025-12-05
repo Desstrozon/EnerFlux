@@ -8,7 +8,7 @@ $sessionId = $_GET['session_id'] ?? '';
     <title>Redirigiendo...</title>
     <script>
         // Redirigir usando JavaScript para que React Router lo maneje
-        window.location.href = '/frontend/#/checkout/success?session_id=<?php echo htmlspecialchars($sessionId); ?>';
+        window.location.href = '/frontend/checkout/success?session_id=<?php echo htmlspecialchars($sessionId); ?>';
     </script>
 </head>
 <body>
