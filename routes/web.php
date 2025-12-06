@@ -35,10 +35,10 @@ Route::get('/frontend/assets/{path}', function ($path) {
 
 // Catch-all para React Router - DEBE IR AL FINAL
 // Sirve el index.html del frontend para todas las rutas que no sean API o rutas específicas de Laravel
-Route::fallback(function () {
+Route::get('/{any}', function () {
     $indexPath = base_path('frontend/index.html');
     if (file_exists($indexPath)) {
         return response()->file($indexPath);
     }
     abort(404, 'Frontend not found');
-});
+})->where('any', '^(?!api|storage|dashboard|frontend/assets).*$');
