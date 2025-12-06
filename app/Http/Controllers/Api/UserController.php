@@ -253,6 +253,8 @@ class UserController extends Controller
         $data = $request->validate($rules);
 
         // === user básico (igual que antes) ===
+        $rolAnterior = $user->rol; // Guardar el rol anterior
+        
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
@@ -260,6 +262,15 @@ class UserController extends Controller
         if (isset($data['email'])) $user->email = $data['email'];
         if ($isAdmin && isset($data['rol'])) $user->rol = strtolower($data['rol']);
         $user->save();
+
+        // === Si cambió el rol, eliminar el perfil anterior ===
+        if ($isAdmin && isset($data['rol']) && $rolAnterior !== $user->rol) {
+            if ($rolAnterior === 'vendedor') {
+                $user->perfilVendedor()?->delete();
+            } elseif ($rolAnterior === 'cliente') {
+                $user->perfilCliente()?->delete();
+            }
+        }
 
         // === perfiles (aquí añadimos campos nuevos) ===
         if ($user->rol === 'vendedor') {
