@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from 'primereact/sidebar';
 import { OrderList } from 'primereact/orderlist';
 import { Button } from 'primereact/button';
@@ -11,7 +12,7 @@ import { buildImageUrl } from "@/lib/http";
 type Props = { visible: boolean; onHide: () => void };
 
 export default function CartSidebar({ visible, onHide }: Props) {
-
+  const navigate = useNavigate();
   const [isPaying, setIsPaying] = React.useState(false);
   // manejado del chekout para el botón comprar
   async function handleCheckout() {
@@ -20,7 +21,8 @@ export default function CartSidebar({ visible, onHide }: Props) {
       const token = localStorage.getItem("token");
       if (!token) {
         await alertInfo("Inicia sesión", "Necesitas iniciar sesión para completar la compra.");
-        window.location.assign("/login");
+        onHide();
+        navigate("/login");
         return;
       }
 
